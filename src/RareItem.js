@@ -14,7 +14,6 @@ class RareItem extends Item {
       this.name === 'Backstage passes to a TAFKAL80ETC concert'
     ) {
       this.quality = 0;
-      this.sellIn -= 1;
       return;
     }
     if (this.sellIn <= 5) {
@@ -27,7 +26,6 @@ class RareItem extends Item {
     if (this.quality > 50) {
       this.quality = 50;
     }
-    this.sellIn -= 1;
   }
 }
 

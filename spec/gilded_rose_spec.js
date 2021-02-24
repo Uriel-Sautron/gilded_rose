@@ -2,6 +2,8 @@
 /* eslint-disable prettier/prettier */
 import Shop from '../src/gilded_rose'
 import Item from '../src/Item'
+import RareItem from '../src/RareItem'
+import LegendaryItem from '../src/LegendaryItem'
 
 describe('GildedRose shop manager', () => {
   let listItems;
@@ -28,9 +30,9 @@ describe('GildedRose shop manager', () => {
   });
 
   it('Augmenter la qualité de 1 pour Aged Brie et Backstage passes', () => {
-    listItems.push(new Item('Aged Brie', 20, 30));
+    listItems.push(new RareItem('Aged Brie', 20, 30));
     listItems.push(
-      new Item('Backstage passes to a TAFKAL80ETC concert', 20, 30)
+      new RareItem('Backstage passes to a TAFKAL80ETC concert', 20, 30)
     );
 
     const gildedRose = new Shop(listItems);
@@ -46,10 +48,29 @@ describe('GildedRose shop manager', () => {
     });
   });
 
-  it('Augmenter la qualité de 3 pour Aged Brie et Backstage passes', () => {
-    listItems.push(new Item('Aged Brie', 5, 30));
+  it('Augmenter la qualité de 2 pour Aged Brie et Backstage passes pour sellIn compris entre 11 et 5', () => {
+    listItems.push(new RareItem('Aged Brie', 8, 30));
     listItems.push(
-      new Item('Backstage passes to a TAFKAL80ETC concert', 5, 30)
+      new RareItem('Backstage passes to a TAFKAL80ETC concert', 8, 30)
+    );
+
+    const gildedRose = new Shop(listItems);
+    const items = gildedRose.updateQuality();
+
+    const expected = [
+      { sellIn: 7, quality: 32 },
+      { sellIn: 7, quality: 32 },
+    ];
+    expected.forEach((testCase, idx) => {
+      expect(items[idx].quality).toBe(testCase.quality);
+      expect(items[idx].sellIn).toBe(testCase.sellIn);
+    });
+  });
+
+  it('Augmenter la qualité de 3 pour Aged Brie et Backstage passes pour sellIn <= 5', () => {
+    listItems.push(new RareItem('Aged Brie', 5, 30));
+    listItems.push(
+      new RareItem('Backstage passes to a TAFKAL80ETC concert', 4, 30)
     );
 
     const gildedRose = new Shop(listItems);
@@ -57,7 +78,7 @@ describe('GildedRose shop manager', () => {
 
     const expected = [
       { sellIn: 4, quality: 33 },
-      { sellIn: 4, quality: 33 },
+      { sellIn: 3, quality: 33 },
     ];
     expected.forEach((testCase, idx) => {
       expect(items[idx].quality).toBe(testCase.quality);
@@ -66,7 +87,7 @@ describe('GildedRose shop manager', () => {
   });
 
   it('Verifier que la qualité de Sulfuras ne se modifie pas', () => {
-    listItems.push(new Item('Sulfuras, Hand of Ragnaros', 5, 80));
+    listItems.push(new LegendaryItem('Sulfuras, Hand of Ragnaros', 5, 80));
 
     const gildedRose = new Shop(listItems);
     const items = gildedRose.updateQuality();
@@ -81,9 +102,9 @@ describe('GildedRose shop manager', () => {
   });
 
   it('Verifier que la qualité ne depasse pas 50 pour Aged Brie et Backstage passes', () => {
-    listItems.push(new Item('Aged Brie', 5, 50));
+    listItems.push(new RareItem('Aged Brie', 5, 50));
     listItems.push(
-      new Item('Backstage passes to a TAFKAL80ETC concert', 9, 50)
+      new RareItem('Backstage passes to a TAFKAL80ETC concert', 9, 50)
     );
 
     const gildedRose = new Shop(listItems);
@@ -101,14 +122,14 @@ describe('GildedRose shop manager', () => {
 
   it('Verifier que la qualité de Backstage passes tombe à 0 après le concert', () => {
     listItems.push(
-      new Item('Backstage passes to a TAFKAL80ETC concert', 0, 50)
+      new RareItem('Backstage passes to a TAFKAL80ETC concert', 0, 50)
     );
 
     const gildedRose = new Shop(listItems);
     const items = gildedRose.updateQuality();
 
     const expected = [
-      { sellIn: 0, quality: 0},
+      { sellIn: -1, quality: 0},
     ];
     expected.forEach((testCase, idx) => {
       expect(items[idx].quality).toBe(testCase.quality);
@@ -124,8 +145,8 @@ describe('GildedRose shop manager', () => {
     const items = gildedRose.updateQuality();
 
     const expected = [
-      { sellIn: 0, quality: 18 },
-      { sellIn: 0, quality: 4 },
+      { sellIn: -1, quality: 18 },
+      { sellIn: -1, quality: 4 },
     ];
     expected.forEach((testCase, idx) => {
       expect(items[idx].quality).toBe(testCase.quality);
@@ -133,21 +154,17 @@ describe('GildedRose shop manager', () => {
     });
   });
 
-  it("Verifier que le sellIn ne soit jamais négative.", () => {
-    listItems.push(new Item('+5 Dexterity Vest', 0, 20));
-    listItems.push(new Item('Mana Cake', 0, 6));
-    listItems.push(new Item('Aged Brie', 0, 50));
-    listItems.push(
-      new Item('Backstage passes to a TAFKAL80ETC concert', 0, 50));
-
+  it("Verifier que le quality ne soit jamais négative.", () => {
+    listItems.push(new Item('+5 Dexterity Vest', 0, 0));
+    listItems.push(new Item('Mana Cake', 10, 0));
+  
     const gildedRose = new Shop(listItems);
     const items = gildedRose.updateQuality();
 
     const expected = [
-      { sellIn: 0, quality: 18 },
-      { sellIn: 0, quality: 4 },
-      { sellIn: 0, quality: 50 },
-      { sellIn: 0, quality: 0 },
+      { sellIn: -1, quality: 0},
+      { sellIn: 9, quality: 0 },
+      
     ];
     expected.forEach((testCase, idx) => {
       expect(items[idx].quality).toBe(testCase.quality);
